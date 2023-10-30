@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Directory to hold the files
+DIR_NAME="secured_scripts"
+
 # URL locations for the files on GitLab or GitHub Pages
 SCRIPT_URL="https://sachita007.github.io/TestScript/script.js.enc"
 VERSION_URL="https://sachita007.github.io/TestScript/version.json"
@@ -12,11 +15,21 @@ echo "${VAR_NAME}"
 # Fetch the key from the derived environment variable
 DECRYPTION_KEY="${!VAR_NAME}"
 
+
+
 # Check if the key variable is set
 if [ -z "$DECRYPTION_KEY" ]; then
     echo "Error: The decryption key is not set."
     exit 1
 fi
+
+# Create the directory if it doesn't exist
+if [ ! -d "$DIR_NAME" ]; then
+    mkdir "$DIR_NAME"
+fi
+
+# Change to the directory
+cd "$DIR_NAME"
 
 # Function to download the encrypted script
 download_script() {
