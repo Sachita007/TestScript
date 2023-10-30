@@ -6,6 +6,7 @@ VERSION_URL="https://sachita007.github.io/TestScript/version.json"
 
 # Derive the variable name from the script name
 VAR_NAME=$(basename "$0" .sh)
+echo "${VAR_NAME}"
 
 # Fetch the key from the derived environment variable
 DECRYPTION_KEY="${!VAR_NAME}"
