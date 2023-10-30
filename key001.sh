@@ -5,7 +5,8 @@ SCRIPT_URL="https://sachita007.github.io/TestScript/script.js.enc"
 VERSION_URL="https://sachita007.github.io/TestScript/version.json"
 
 # Derive the variable name from the script name
-VAR_NAME=$(basename "$0" .sh)
+#VAR_NAME=$(basename "$0" .sh)
+VAR_NAME="key001"
 echo "${VAR_NAME}"
 
 # Fetch the key from the derived environment variable
