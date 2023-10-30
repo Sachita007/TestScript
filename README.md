@@ -2,7 +2,7 @@
 
 ###### Download the encrypted script from GitLab Pages
 ```bash
-wget https://sachita007.github.io/TestScript/script.js.enc
+wget https://sachita007.github.io/TestScript/script.js
 ```
 
 ###### Download the version.json file from GitLab Pages
