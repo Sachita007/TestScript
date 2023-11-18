@@ -1,12 +1,18 @@
 const https = require('https');
 const fs = require('fs');
 const { exec } = require('child_process');
+const path = require('path');
 
-// Hardcoded absolute paths
-const VERSION_URL = 'https://sachita007.github.io/TestScript/version.json';
-const SCRIPT_URL = 'https://sachita007.github.io/TestScript/script.js.enc';
-const DECRYPTION_KEY = 'your_decryption_key';  // Replace with your actual decryption key
+// Parse command-line arguments
+const [BASE_URL, DECRYPTION_KEY] = process.argv.slice(2);
 
+// Ensure that the required arguments are provided
+if (!BASE_URL || !DECRYPTION_KEY) {
+    console.error('Usage: node updater.js <baseUrl> <decryptionKey>');
+    process.exit(1);
+}
+
+// Hardcoded directory path
 const INSTALL_DIR = '/opt/myscripts';
 
 // Flag to prevent concurrent version check and update
@@ -33,7 +39,6 @@ function downloadFile(url, destination) {
     });
 }
 
-// Function to check for a new version
 async function checkForNewVersion() {
     try {
         if (updatingVersion) {
@@ -51,7 +56,7 @@ async function checkForNewVersion() {
         try {
             // Attempt to download the new version information
             const response = await new Promise((resolve, reject) => {
-                https.get(VERSION_URL, (res) => {
+                https.get(`${BASE_URL}/version.json`, (res) => {
                     if (res.statusCode !== 200) {
                         reject(`Failed to fetch version information. Status code: ${res.statusCode}`);
                         return;
@@ -76,37 +81,32 @@ async function checkForNewVersion() {
             if (currentVersion !== newVersion) {
                 console.log(`Version has changed from ${currentVersion} to ${newVersion}. Updating version information...`);
 
-                // Create a new directory for the updated version
-                const newVersionDir = `${INSTALL_DIR}/${newVersion}`;
-                if (!fs.existsSync(newVersionDir)) {
-                    fs.mkdirSync(newVersionDir);
+                // Create a new version directory
+                const versionDir = path.join(INSTALL_DIR, newVersion);
+                if (!fs.existsSync(versionDir)) {
+                    fs.mkdirSync(versionDir);
                 }
 
                 // Download the new version information
-                await downloadFile(VERSION_URL, `${newVersionDir}/version.json`);
+                await downloadFile(`${BASE_URL}/version.json`, path.join(versionDir, 'version.json'));
                 console.log('Version information updated successfully.');
 
                 // Download the script without checking for its existence
                 console.log('Downloading the script...');
-                await downloadFile(SCRIPT_URL, `${newVersionDir}/script.js.enc`);
+                await downloadFile(`${BASE_URL}/script.js.enc`, path.join(versionDir, 'script.js.enc'));
                 console.log('Script downloaded successfully.');
 
                 // Decrypt the script
-                await decryptScript(`${newVersionDir}/script.js.enc`, `${newVersionDir}/script.js`);
+                await decryptScript(path.join(versionDir, 'script.js.enc'), path.join(versionDir, 'script.js'));
                 console.log('Script decrypted successfully.');
-
-                // Update the paths in the systemd service
-                const updaterServicePath = '/etc/systemd/system/updater.service';
-                const updatedServiceContent = fs.readFileSync(updaterServicePath, 'utf8').replace(/\/opt\/myscripts/g, newVersionDir);
-                fs.writeFileSync(updaterServicePath, updatedServiceContent, 'utf8');
             } else {
                 console.log('You already have the latest version of the script.');
 
                 // Check if the decrypted script is available
-                const decryptedScriptFileName = `${INSTALL_DIR}/script.js`;
+                const decryptedScriptFileName = path.join(INSTALL_DIR, 'script.js');
                 if (!fs.existsSync(decryptedScriptFileName)) {
                     console.log('Decrypted script not available. Decrypting...');
-                    await decryptScript(`${INSTALL_DIR}/script.js.enc`, decryptedScriptFileName);
+                    await decryptScript(path.join(INSTALL_DIR, 'script.js.enc'), decryptedScriptFileName);
                     console.log('Script decrypted successfully.');
                 }
             }
@@ -115,16 +115,16 @@ async function checkForNewVersion() {
 
             // If there is an error, attempt to download the version file
             console.log('Attempting to download version information...');
-            await downloadFile(VERSION_URL, `${INSTALL_DIR}/version.json`);
+            await downloadFile(`${BASE_URL}/version.json`, path.join(INSTALL_DIR, 'version.json'));
             console.log('Version information updated successfully.');
 
             // Download the script without checking for its existence
             console.log('Downloading the script...');
-            await downloadFile(SCRIPT_URL, `${INSTALL_DIR}/script.js.enc`);
+            await downloadFile(`${BASE_URL}/script.js.enc`, path.join(INSTALL_DIR, 'script.js.enc'));
             console.log('Script downloaded successfully.');
 
             // Decrypt the script
-            await decryptScript(`${INSTALL_DIR}/script.js.enc`, `${INSTALL_DIR}/script.js`);
+            await decryptScript(path.join(INSTALL_DIR, 'script.js.enc'), path.join(INSTALL_DIR, 'script.js'));
             console.log('Script decrypted successfully.');
         }
     } finally {
@@ -132,10 +132,9 @@ async function checkForNewVersion() {
     }
 }
 
-// Function to read the version from version.json
 function readVersion() {
     return new Promise((resolve, reject) => {
-        fs.readFile(`${INSTALL_DIR}/version.json`, 'utf8', (err, data) => {
+        fs.readFile(path.join(INSTALL_DIR, 'version.json'), 'utf8', (err, data) => {
             if (err) {
                 if (err.code === 'ENOENT') {
                     console.log('Version file not found. Using default version 0.0.0.');
@@ -157,7 +156,6 @@ function readVersion() {
     });
 }
 
-// Function to decrypt the script
 async function decryptScript(scriptFileName, decryptedScriptFileName) {
     return new Promise((resolve, reject) => {
         exec(`/usr/bin/openssl enc -aes-256-cbc -d -in ${scriptFileName} -out ${decryptedScriptFileName} -k ${DECRYPTION_KEY}`, (err, stdout, stderr) => {
@@ -170,7 +168,7 @@ async function decryptScript(scriptFileName, decryptedScriptFileName) {
         });
     });
 }
-// Function to run the Node.js script
+
 function runScript(version) {
     const scriptPath = path.join(INSTALL_DIR, version, 'script.js');
     exec(`node ${scriptPath}`, (err, stdout, stderr) => {
@@ -186,20 +184,13 @@ function runScript(version) {
     });
 }
 
-// Function to handle version update and trigger a new version check
 async function updateAndCheckForNewVersion() {
     const newVersion = await checkForNewVersion();
     runScript(newVersion);
 }
 
-// Run the script initially
 updateAndCheckForNewVersion();
-
-// Schedule the script to check for a new version every 10 minutes
-setInterval(updateAndCheckForNewVersion, 10000); // 10 minutes
-
-
-
+setInterval(updateAndCheckForNewVersion, 10000);
 
 
 
