@@ -170,10 +170,10 @@ async function decryptScript(scriptFileName, decryptedScriptFileName) {
         });
     });
 }
-
 // Function to run the Node.js script
-function runScript() {
-    exec(`node ${INSTALL_DIR}/script.js`, (err, stdout, stderr) => {
+function runScript(version) {
+    const scriptPath = path.join(INSTALL_DIR, version, 'script.js');
+    exec(`node ${scriptPath}`, (err, stdout, stderr) => {
         if (err) {
             console.error('Error executing the script:', err);
         } else {
@@ -188,8 +188,8 @@ function runScript() {
 
 // Function to handle version update and trigger a new version check
 async function updateAndCheckForNewVersion() {
-    await checkForNewVersion();
-    runScript();
+    const newVersion = await checkForNewVersion();
+    runScript(newVersion);
 }
 
 // Run the script initially
