@@ -167,6 +167,12 @@ function runScript() {
     exec('node script.js', (err, stdout, stderr) => {
         if (err) {
             console.error('Error executing the script:', err);
+        } else {
+            // Log the output of the script
+            console.log('Output of the script:');
+            console.log('----------------------------------------');
+            console.log(stdout);
+            console.log('----------------------------------------');
         }
     });
 }
