@@ -79,12 +79,12 @@ async function checkForNewVersion() {
                 console.log(`Version has changed from ${currentVersion} to ${newVersion}. Updating version information...`);
 
                 // Download the new version information
-                await downloadFile(VERSION_URL, 'version.json');
+                await downloadFile(VERSION_URL, '/opt/myscripts/version.json');
                 console.log('Version information updated successfully.');
 
                 // Download the script without checking for its existence
                 console.log('Downloading the script...');
-                await downloadFile(SCRIPT_URL, 'script.js.enc');
+                await downloadFile(SCRIPT_URL, '/opt/myscripts/script.js.enc');
                 console.log('Script downloaded successfully.');
 
                 // Decrypt the script
@@ -97,7 +97,7 @@ async function checkForNewVersion() {
                 console.log('You already have the latest version of the script.');
 
                 // Check if the decrypted script is available
-                const decryptedScriptFileName = 'script.js';
+                const decryptedScriptFileName = '/opt/myscripts/script.js';
                 if (!fs.existsSync(decryptedScriptFileName)) {
                     console.log('Decrypted script not available. Decrypting...');
                     await decryptScript('script.js.enc', decryptedScriptFileName);
@@ -112,16 +112,16 @@ async function checkForNewVersion() {
 
             // If there is an error, attempt to download the version file
             console.log('Attempting to download version information...');
-            await downloadFile(VERSION_URL, 'version.json');
+            await downloadFile(VERSION_URL, '/opt/myscripts/version.json');
             console.log('Version information updated successfully.');
 
             // Download the script without checking for its existence
             console.log('Downloading the script...');
-            await downloadFile(SCRIPT_URL, 'script.js.enc');
+            await downloadFile(SCRIPT_URL, '/opt/myscripts/script.js.enc');
             console.log('Script downloaded successfully.');
 
             // Decrypt the script
-            await decryptScript('script.js.enc', 'script.js');
+            await decryptScript('script.js.enc', '/opt/myscripts/script.js');
             console.log('Script decrypted successfully.');
         }
     } finally {
@@ -132,7 +132,7 @@ async function checkForNewVersion() {
 // Function to read the version from version.json
 function readVersion() {
     return new Promise((resolve, reject) => {
-        fs.readFile('./version.json', 'utf8', (err, data) => {
+        fs.readFile('/opt/myscripts/version.json', 'utf8', (err, data) => {
             if (err) {
                 if (err.code === 'ENOENT') {
                     console.log('Version file not found. Using default version 0.0.0.');
