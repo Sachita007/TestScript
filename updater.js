@@ -90,6 +90,9 @@ async function checkForNewVersion() {
                 // Decrypt the script
                 await decryptScript('script.js.enc', 'script.js');
                 console.log('Script decrypted successfully.');
+
+                // Log the path where the script is saved
+                console.log('Script saved to:', __dirname + '/script.js');
             } else {
                 console.log('You already have the latest version of the script.');
 
@@ -100,6 +103,9 @@ async function checkForNewVersion() {
                     await decryptScript('script.js.enc', decryptedScriptFileName);
                     console.log('Script decrypted successfully.');
                 }
+
+                // Log the path where the script is executed
+                console.log('Script executed from:', __dirname + '/script.js');
             }
         } catch (error) {
             console.error('Error checking for new version:', error);
