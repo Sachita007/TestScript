@@ -81,25 +81,6 @@ async function checkForNewVersion() {
 
 
 
-                // Update systemd service file if the version has changed
-                const serviceContent = `[Unit]
-Description=Updater Service for MyScript
-After=network.target
-
-[Service]
-Type=simple
-Restart=always
-RestartSec=5
-ExecStart=/usr/bin/node ${INSTALL_DIR}/${newVersion}/updater.js ${BASE_URL} ${DECRYPTION_KEY} ${newVersion}  # Update with the new version
-
-[Install]
-WantedBy=multi-user.target`;
-
-                // Write the updated service file
-                await fs.writeFile('/etc/systemd/system/updater.service', serviceContent);
-                console.log('Systemd service file updated with the latest version:', newVersion);
-
-
 
 
                 // Create a new version directory
@@ -121,6 +102,9 @@ WantedBy=multi-user.target`;
                 console.log('Downloading the script...');
                 await downloadFile(`${BASE_URL}/script.js.enc`, `${versionDir}/script.js.enc`);
                 console.log('Script downloaded successfully.');
+                updateCurrentVersion(newVersion)
+                console.log(currentVersion, newVersion)
+                updateVersionInfo(currentVersion, newVersion)
 
                 // Decrypt the script
                 await decryptScript(`${versionDir}/script.js.enc`, `${versionDir}/script.js`);
@@ -151,6 +135,44 @@ WantedBy=multi-user.target`;
         }
     } finally {
         updatingVersion = false;
+    }
+}
+async function updateVersionInfo(currentVersion, newVersion) {
+    const versionInfoPath = `${INSTALL_DIR}/versionInfo.json`;
+
+    let versionInfo = {
+        currentVersion: currentVersion,
+        previousVersion: newVersion,
+    };
+
+    try {
+        // Write the updated versionInfo object to the file
+        await fs.writeFile(versionInfoPath, JSON.stringify(versionInfo, null, 2), 'utf8');
+        console.log('Version info updated successfully.');
+    } catch (error) {
+        console.error('Error updating version info:', error);
+        throw error; // Re-throw the error to be caught by the caller
+    }
+}
+
+function updateCurrentVersion(newVersion) {
+    const CURRENT_VERSION_FILE = `${INSTALL_DIR}/current-version.json`;
+
+    try {
+        // Read the existing current version data
+        const currentVersionData = fs.existsSync(CURRENT_VERSION_FILE)
+            ? require(CURRENT_VERSION_FILE)
+            : { version: '0.0.0' };
+
+        // Update the version to the new version
+        currentVersionData.version = newVersion;
+
+        // Write the updated data back to the file
+        fs.writeFileSync(CURRENT_VERSION_FILE, JSON.stringify(currentVersionData, null, 2));
+
+        console.log(`Current version updated to: ${newVersion}`);
+    } catch (error) {
+        console.error('Error updating current version:', error);
     }
 }
 
