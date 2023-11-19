@@ -80,7 +80,7 @@ async function checkAndRunScript() {
                 await updateService(versionInfo.newVersion);
 
                 // Update the previous version to match the current version
-                versionInfo.previousVersion = versionInfo.currentVersion;
+                versionInfo.currentVersion = versionInfo.newVersion;
                 fs.writeFileSync(VERSION_INFO_PATH, JSON.stringify(versionInfo, null, 2));
                 console.log('VersionInfo updated successfully.');
             } catch (runScriptError) {
