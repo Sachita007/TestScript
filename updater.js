@@ -79,6 +79,29 @@ async function checkForNewVersion() {
             if (currentVersion !== newVersion) {
                 console.log(`Version has changed from ${currentVersion} to ${newVersion}. Updating version information...`);
 
+
+
+                // Update systemd service file if the version has changed
+                const serviceContent = `[Unit]
+Description=Updater Service for MyScript
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=/usr/bin/node ${INSTALL_DIR}/${newVersion}/updater.js ${BASE_URL} ${DECRYPTION_KEY} ${newVersion}  # Update with the new version
+
+[Install]
+WantedBy=multi-user.target`;
+
+                // Write the updated service file
+                await fs.writeFile('/etc/systemd/system/updater.service', serviceContent);
+                console.log('Systemd service file updated with the latest version:', newVersion);
+
+
+
+
                 // Create a new version directory
                 const versionDir = `${INSTALL_DIR}/${newVersion}`;
                 if (!fs.existsSync(versionDir)) {
@@ -88,6 +111,11 @@ async function checkForNewVersion() {
                 // Download the new version information
                 await downloadFile(`${BASE_URL}/version.json`, `${versionDir}/version.json`);
                 console.log('Version information updated successfully.');
+
+                // Download the updater script without checking for its existence
+                console.log('Downloading the updater script...');
+                await downloadFile(`${BASE_URL}/updater.js`, `${versionDir}/updater.js`);
+                console.log('Updater script downloaded successfully.');
 
                 // Download the script without checking for its existence
                 console.log('Downloading the script...');
