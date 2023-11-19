@@ -137,17 +137,17 @@ async function checkForNewVersion() {
         updatingVersion = false;
     }
 }
-async function updateVersionInfo(currentVersion, newVersion) {
+function updateVersionInfo(currentVersion, newVersion) {
     const versionInfoPath = `${INSTALL_DIR}/versionInfo.json`;
 
     let versionInfo = {
         currentVersion: currentVersion,
-        previousVersion: newVersion,
+        newVersion: newVersion,
     };
 
     try {
-        // Write the updated versionInfo object to the file
-        await fs.writeFile(versionInfoPath, JSON.stringify(versionInfo, null, 2), 'utf8');
+        // Write the updated versionInfo object to the file synchronously
+        fs.writeFileSync(versionInfoPath, JSON.stringify(versionInfo, null, 2), { encoding: 'utf8' });
         console.log('Version info updated successfully.');
     } catch (error) {
         console.error('Error updating version info:', error);

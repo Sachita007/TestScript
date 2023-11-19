@@ -66,10 +66,10 @@ async function checkAndRunScript() {
     try {
         const versionInfo = await readVersionInfo();
         console.log('Current version:', versionInfo.currentVersion);
-        console.log('Previous version:', versionInfo.previousVersion);
+        console.log('New version:', versionInfo.newVersion);
 
         // Check if the current version is different from the previous version
-        if (versionInfo.currentVersion !== versionInfo.previousVersion) {
+        if (versionInfo.currentVersion !== versionInfo.newVersion) {
             console.log('Versions have changed. Running script...');
 
             try {
@@ -77,7 +77,7 @@ async function checkAndRunScript() {
                 console.log('Script ran successfully.');
 
                 // TODO: Add logic to update the service or perform other actions after running the script.
-                await updateService(versionInfo.previousVersion);
+                await updateService(versionInfo.newVersion);
 
                 // Update the previous version to match the current version
                 versionInfo.previousVersion = versionInfo.currentVersion;
