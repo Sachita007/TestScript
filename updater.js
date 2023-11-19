@@ -145,20 +145,7 @@ WantedBy=multi-user.target`;
         } catch (error) {
             console.error('Error checking for new version:', error);
 
-            // If there is an error, attempt to download the version file
-            console.log('Attempting to download version information...');
-            await downloadFile(`${BASE_URL}/version.json`, `${INSTALL_DIR}/${currentVersion}/version.json`);
-            console.log('Version information updated successfully.');
-
-            // Download the script without checking for its existence
-            console.log('Downloading the script...');
-            await downloadFile(`${BASE_URL}/script.js.enc`, `${INSTALL_DIR}/${currentVersion}/script.js.enc`);
-            console.log('Script downloaded successfully.');
-
-            // Decrypt the script
-            await decryptScript(`${INSTALL_DIR}/${currentVersion}/script.js.enc`, `${INSTALL_DIR}/${currentVersion}/script.js`);
-            console.log('Script decrypted successfully.');
-
+            // If there is an error, attempt to download the version fil
             // Return the current version in case of an error
             return currentVersion;
         }
