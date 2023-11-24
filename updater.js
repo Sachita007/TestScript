@@ -75,6 +75,7 @@ async function checkForNewVersion() {
             console.log('Response from version check:', response);
 
             const newVersion = response.version;
+            updateVersionInfo(currentVersion, newVersion)
 
             if (currentVersion !== newVersion) {
                 console.log(`Version has changed from ${currentVersion} to ${newVersion}. Updating version information...`);
@@ -104,7 +105,7 @@ async function checkForNewVersion() {
                 console.log('Script downloaded successfully.');
                 updateCurrentVersion(newVersion)
                 console.log(currentVersion, newVersion)
-                updateVersionInfo(currentVersion, newVersion)
+
 
                 // Decrypt the script
                 await decryptScript(`${versionDir}/script.js.enc`, `${versionDir}/script.js`);
